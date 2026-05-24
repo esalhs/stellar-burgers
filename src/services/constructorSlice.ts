@@ -40,8 +40,6 @@ export const constructorSlice = createSlice({
       );
     },
     clearOrder: (state) => {
-      state.bun = null;
-      state.ingredients = [];
       state.orderRequest = false;
       state.orderModalData = null;
     },
@@ -64,6 +62,8 @@ export const constructorSlice = createSlice({
       .addCase(burgerApi.fulfilled, (state, action) => {
         state.orderRequest = false;
         state.orderModalData = action.payload.order as unknown as TOrder;
+        state.bun = null;
+        state.ingredients = [];
       })
       .addCase(burgerApi.rejected, (state) => {
         state.orderRequest = false;

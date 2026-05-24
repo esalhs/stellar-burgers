@@ -1,4 +1,4 @@
-import { getFeedsApi } from '@api';
+import { getFeedsApi, getOrderByNumberApi } from '@api';
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import { TOrder } from '@utils-types';
 
@@ -8,6 +8,7 @@ type TFeedState = {
   totalToday: number;
   isLoading: boolean;
   error: string | null;
+  selectedOrder: TOrder | null;
 };
 
 const initialState: TFeedState = {
@@ -15,12 +16,21 @@ const initialState: TFeedState = {
   total: 0,
   totalToday: 0,
   isLoading: false,
-  error: null
+  error: null,
+  selectedOrder: null
 };
 
 export const feedApi = createAsyncThunk(
   'feed/getFeed',
   async () => await getFeedsApi()
+);
+
+export const getOrderByNumber = createAsyncThunk(
+  'feed/getOrderByNumber',
+  async (number: number) => {
+    const response = await getOrderByNumberApi(number);
+    return response.orders[0];
+  }
 );
 
 export const feedSlice = createSlice({
@@ -41,6 +51,17 @@ export const feedSlice = createSlice({
         state.totalToday = action.payload.totalToday;
       })
       .addCase(feedApi.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.error.message ?? 'Неизвестная ошибка';
+      })
+      .addCase(getOrderByNumber.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(getOrderByNumber.fulfilled, (state, action) => {
+        state.selectedOrder = action.payload;
+      })
+      .addCase(getOrderByNumber.rejected, (state, action) => {
         state.isLoading = false;
         state.error = action.error.message ?? 'Неизвестная ошибка';
       });
